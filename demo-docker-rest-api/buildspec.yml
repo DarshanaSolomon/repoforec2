@@ -1,18 +1,26 @@
 version: 0.2
-
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region us-east-1)
+      - aws --version
+      - $(aws ecr get-login --region us-east-2)
+      - REPOSITORY_URI=934445903671.dkr.ecr.us-east-1.amazonaws.com/codebuildrepo
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...          
-      - docker build -t simpleapiimage:latest .
-      - docker tag simpleapiimage:latest 934445903671.dkr.ecr.us-east-1.amazonaws.com/codebuildrepo:latest    
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Pushing the Docker image...
-      - docker push 934445903671.dkr.ecr.us-east-1.amazonaws.com/codebuildrepo:latest
+      - echo Build completed
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing definitions file...
+      - printf '[{"name":"project-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > taskdefinition.json
+artifacts:
+    files: taskdefinition.json
