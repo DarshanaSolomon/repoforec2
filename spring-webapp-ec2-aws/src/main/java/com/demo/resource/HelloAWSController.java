@@ -10,6 +10,6 @@ public class HelloAWSController {
 
 	@GetMapping("/message")
 	public String getMessage() {
-		return "Hello and Welcome to  AWS EC2 Sprig Web App deploymnt !!!!!";
+		return "Hello and Welcome to  AWS EC2 Sprig Web App deploymnt !!!!!-EC2 instance-2";
 	}
 }
